@@ -12,6 +12,9 @@ import {
 } from "lucide-react"
 import html2canvas from "html2canvas"
 
+import ImageCropper from "@/components/ImageCropper"
+import getCroppedImg from "@/utils/cropImage"
+
 export default function EditorPage() {
   const router = useRouter()
   const imageRef = useRef<HTMLDivElement>(null)
@@ -20,6 +23,10 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [filter, setFilter] = useState("none")
   const [analyzing, setAnalyzing] = useState(false)
+
+  // 🔥 Crop states
+  const [croppedArea, setCroppedArea] = useState<any>(null)
+  const [cropping, setCropping] = useState(false)
 
   useEffect(() => {
     const storedImage = localStorage.getItem("pixtone-image")
@@ -62,7 +69,7 @@ export default function EditorPage() {
     localStorage.setItem("pixtone-gallery", JSON.stringify(existing))
   }
 
-  // 🔥 IA AUTO ENHANCE (CORRIGÉ)
+  // 🔥 IA Enhance
   const handleAutoEnhance = async () => {
     if (!image) return
 
@@ -71,16 +78,12 @@ export default function EditorPage() {
 
       const res = await fetch("/api/enhance", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image }),
       })
 
       const data = await res.json()
-      console.log("REPONSE API:", data)
 
-      // ✅ Replicate retourne un tableau
       if (Array.isArray(data.output) && data.output.length > 0) {
         setImage(data.output[0])
       }
@@ -90,6 +93,15 @@ export default function EditorPage() {
     } finally {
       setAnalyzing(false)
     }
+  }
+
+  // 🔥 Save crop
+  const handleCropSave = async () => {
+    if (!image || !croppedArea) return
+
+    const result = await getCroppedImg(image, croppedArea)
+    setImage(result)
+    setCropping(false)
   }
 
   return (
@@ -124,7 +136,7 @@ export default function EditorPage() {
       {/* PANEL */}
       <div
         className={`transition-all duration-300 overflow-hidden bg-zinc-900 border-t border-zinc-800 ${
-          activeTab ? "max-h-72 p-5" : "max-h-0 p-0"
+          activeTab ? "max-h-[500px] p-5" : "max-h-0 p-0"
         }`}
       >
 
@@ -133,9 +145,6 @@ export default function EditorPage() {
             <PanelButton onClick={handleAutoEnhance}>
               {analyzing ? "Analyse IA..." : "Auto IA"}
             </PanelButton>
-            <PanelButton>Améliorer</PanelButton>
-            <PanelButton>Sujet</PanelButton>
-            <PanelButton>Ciel</PanelButton>
           </PanelContainer>
         )}
 
@@ -165,36 +174,56 @@ export default function EditorPage() {
           </div>
         )}
 
-        {activeTab === "crop" && (
-          <div className="text-center text-gray-400">
-            Recadrage bientôt disponible...
-          </div>
-        )}
+        {activeTab === "crop" && image && (
+          <div className="space-y-4">
+            {!cropping ? (
+              <div className="text-center">
+                <button
+                  onClick={() => setCropping(true)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl"
+                >
+                  Commencer le recadrage
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="h-80">
+                  <ImageCropper
+                    image={image}
+                    onCropComplete={setCroppedArea}
+                  />
+                </div>
 
-        {activeTab === "adjust" && (
-          <div className="text-center text-gray-400">
-            Réglages avancés bientôt disponibles...
-          </div>
-        )}
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => setCropping(false)}
+                    className="px-4 py-2 bg-zinc-700 rounded-xl"
+                  >
+                    Annuler
+                  </button>
 
-        {activeTab === "mask" && (
-          <div className="text-center text-gray-400">
-            Masquage intelligent bientôt disponible...
+                  <button
+                    onClick={handleCropSave}
+                    className="px-4 py-2 bg-blue-600 rounded-xl"
+                  >
+                    Appliquer
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
       </div>
 
-      {/* NAVIGATION BAS */}
+      {/* NAVIGATION */}
       <div className="bg-zinc-950 border-t border-zinc-800 py-4">
         <div className="flex justify-center gap-8">
-
           <NavButton icon={<Wand2 size={20} />} label="Actions" active={activeTab === "actions"} onClick={() => toggleTab("actions")} />
           <NavButton icon={<Sparkles size={20} />} label="Filtres" active={activeTab === "filters"} onClick={() => toggleTab("filters")} />
           <NavButton icon={<Crop size={20} />} label="Recadrage" active={activeTab === "crop"} onClick={() => toggleTab("crop")} />
-          <NavButton icon={<Sliders size={20} />} label="Modifier" active={activeTab === "adjust"} onClick={() => toggleTab("adjust")} />
-          <NavButton icon={<Layers size={20} />} label="Masque" active={activeTab === "mask"} onClick={() => toggleTab("mask")} />
-
+          <NavButton icon={<Sliders size={20} />} label="Modifier" active={false} onClick={() => {}} />
+          <NavButton icon={<Layers size={20} />} label="Masque" active={false} onClick={() => {}} />
         </div>
       </div>
 
