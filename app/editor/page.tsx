@@ -62,7 +62,7 @@ export default function EditorPage() {
     localStorage.setItem("pixtone-gallery", JSON.stringify(existing))
   }
 
-  // 🔥 IA AUTO ENHANCE
+  // 🔥 IA AUTO ENHANCE (CORRIGÉ)
   const handleAutoEnhance = async () => {
     if (!image) return
 
@@ -78,9 +78,11 @@ export default function EditorPage() {
       })
 
       const data = await res.json()
+      console.log("REPONSE API:", data)
 
-      if (data.output) {
-        setImage(data.output)
+      // ✅ Replicate retourne un tableau
+      if (Array.isArray(data.output) && data.output.length > 0) {
+        setImage(data.output[0])
       }
 
     } catch (err) {
@@ -126,7 +128,6 @@ export default function EditorPage() {
         }`}
       >
 
-        {/* ACTIONS */}
         {activeTab === "actions" && (
           <PanelContainer>
             <PanelButton onClick={handleAutoEnhance}>
@@ -138,7 +139,6 @@ export default function EditorPage() {
           </PanelContainer>
         )}
 
-        {/* FILTRES */}
         {activeTab === "filters" && image && (
           <div className="flex gap-4 overflow-x-auto">
             {Object.entries(filters).map(([key, value]) => (
