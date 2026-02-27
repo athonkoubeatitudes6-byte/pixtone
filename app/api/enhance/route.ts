@@ -13,22 +13,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 })
     }
 
-    const output = await replicate.run(
-      "fofr/real-esrgan",
-      {
-        input: {
-          image: image,
-          scale: 2
-        }
+    const prediction = await replicate.predictions.create({
+      model: "fofr/real-esrgan",
+      input: {
+        image,
+        scale: 2
       }
-    )
+    })
 
-    return NextResponse.json({ output })
+    const result = await replicate.wait(prediction)
+
+    return NextResponse.json({ output: result.output })
 
   } catch (error: any) {
     console.error("FULL ERROR:", error)
     return NextResponse.json(
-      { error: error.message || "Enhancement failed" },
+      { error: error.message },
       { status: 500 }
     )
   }
