@@ -1,25 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Sun, Palette, Sparkles, Sliders } from "lucide-react"
 
 export default function EditorPage() {
+  const router = useRouter()
   const [image, setImage] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState("light")
 
   const [values, setValues] = useState({
     exposure: 0,
     contrast: 0,
-    highlights: 0,
     saturation: 0,
   })
 
   useEffect(() => {
     const storedImage = localStorage.getItem("pixtone-image")
-    if (storedImage) {
+    if (!storedImage) {
+      router.push("/")
+    } else {
       setImage(storedImage)
     }
-  }, [])
+  }, [router])
 
   const updateValue = (key: string, value: number) => {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -35,18 +38,14 @@ export default function EditorPage() {
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
 
       {/* IMAGE */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black">
-        {image ? (
+      <div className="flex-1 flex items-center justify-center bg-black">
+        {image && (
           <img
             src={image}
             alt="preview"
-            className="max-h-full object-contain transition-all duration-200"
+            className="max-h-full object-contain"
             style={{ filter: filterStyle }}
           />
-        ) : (
-          <div className="text-gray-500">
-            Aucune image chargée
-          </div>
         )}
       </div>
 
@@ -57,25 +56,12 @@ export default function EditorPage() {
           <div className="space-y-6">
             <Slider label="Exposition" value={values.exposure} onChange={(v) => updateValue("exposure", v)} />
             <Slider label="Contraste" value={values.contrast} onChange={(v) => updateValue("contrast", v)} />
-            <Slider label="Hautes lumières" value={values.highlights} onChange={(v) => updateValue("highlights", v)} />
           </div>
         )}
 
         {activeCategory === "color" && (
           <div className="space-y-6">
             <Slider label="Saturation" value={values.saturation} onChange={(v) => updateValue("saturation", v)} />
-          </div>
-        )}
-
-        {activeCategory === "effects" && (
-          <div className="text-center text-gray-500 mt-6">
-            Effets bientôt disponibles
-          </div>
-        )}
-
-        {activeCategory === "detail" && (
-          <div className="text-center text-gray-500 mt-6">
-            Détail bientôt disponible
           </div>
         )}
       </div>
@@ -85,8 +71,6 @@ export default function EditorPage() {
         <CategoryItem icon={<Sparkles size={20} />} label="Auto" active={false} onClick={() => {}} />
         <CategoryItem icon={<Sun size={20} />} label="Lumière" active={activeCategory === "light"} onClick={() => setActiveCategory("light")} />
         <CategoryItem icon={<Palette size={20} />} label="Couleur" active={activeCategory === "color"} onClick={() => setActiveCategory("color")} />
-        <CategoryItem icon={<Sliders size={20} />} label="Effets" active={activeCategory === "effects"} onClick={() => setActiveCategory("effects")} />
-        <CategoryItem icon={<Sliders size={20} />} label="Détail" active={activeCategory === "detail"} onClick={() => setActiveCategory("detail")} />
       </div>
     </div>
   )

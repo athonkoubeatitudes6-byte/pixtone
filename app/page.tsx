@@ -16,10 +16,22 @@ export default function HomePage() {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = () => {
-      localStorage.setItem("pixtone-image", reader.result as string)
-      router.push("/editor")
+
+    reader.onload = function () {
+      try {
+        const result = reader.result as string
+        localStorage.setItem("pixtone-image", result)
+
+        // petite sécurité
+        setTimeout(() => {
+          router.push("/editor")
+        }, 100)
+
+      } catch (error) {
+        console.error("Erreur upload:", error)
+      }
     }
+
     reader.readAsDataURL(file)
   }
 
@@ -31,18 +43,16 @@ export default function HomePage() {
         PixTone
       </div>
 
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
 
         <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-          Transforme tes photos en œuvres professionnelles ✨
+          Sublime tes photos en un instant ✨
         </h1>
 
         <p className="mt-6 text-gray-400 max-w-xl text-lg">
-          Bienvenue sur <span className="text-white font-semibold">PixTone</span>,
-          l’application gratuite et puissante qui sublime tes images
-          en quelques secondes. Ajuste la lumière, les couleurs,
-          les détails et bien plus encore.
+          PixTone est une application gratuite et puissante pour transformer
+          tes images avec des outils professionnels inspirés de Lightroom.
         </p>
 
         <button
