@@ -1,7 +1,5 @@
 import Replicate from "replicate"
 import { NextResponse } from "next/server"
-import fs from "fs"
-import path from "path"
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
@@ -15,24 +13,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No image" }, { status: 400 })
     }
 
-    // Extraire base64
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "")
-    const buffer = Buffer.from(base64Data, "base64")
-
-    // Sauvegarder temporairement
-    const filePath = path.join("/tmp", `upload-${Date.now()}.png`)
-    fs.writeFileSync(filePath, buffer)
-
-    const output = await replicate.run(
-      "nightmareai/real-esrgan",
-      {
-        input: {
-          image: fs.createReadStream(filePath),
-        },
+    const prediction = await replicate.predictions.create({
+      version: "42fed1c4973f0e4e2f4d41b2e7b4a8e6c7e4d1e3c6b5a4d3e2f1c0b9a8d7e6f5", // real-esrgan version
+      input: {
+        image: image
       }
-    )
+    })
 
-    return NextResponse.json({ output })
+    // attendre résultat
+    let result = prediction
+    while (result.status !== "succeeded" && result.status !== "failed") {
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      result = await replicate.predictions.get(prediction.id)
+    }
+
+    if (result.status === "succeeded") {
+      return NextResponse.json({ output: result.output })
+    }
+
+    return NextResponse.json({ error: "Enhancement failed" }, { status: 500 })
 
   } catch (error) {
     console.error("API ERROR:", error)
