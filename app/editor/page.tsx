@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sun, Palette, Sparkles, Sliders } from "lucide-react"
 
 export default function EditorPage() {
+  const [image, setImage] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState("light")
 
   const [values, setValues] = useState({
@@ -12,6 +13,13 @@ export default function EditorPage() {
     highlights: 0,
     saturation: 0,
   })
+
+  useEffect(() => {
+    const storedImage = localStorage.getItem("pixtone-image")
+    if (storedImage) {
+      setImage(storedImage)
+    }
+  }, [])
 
   const updateValue = (key: string, value: number) => {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -26,46 +34,36 @@ export default function EditorPage() {
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
 
-      {/* IMAGE FULL SCREEN */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden">
-        <img
-          src="/test.jpg"
-          alt="preview"
-          className="max-h-full object-contain transition-all duration-200"
-          style={{ filter: filterStyle }}
-        />
+      {/* IMAGE */}
+      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black">
+        {image ? (
+          <img
+            src={image}
+            alt="preview"
+            className="max-h-full object-contain transition-all duration-200"
+            style={{ filter: filterStyle }}
+          />
+        ) : (
+          <div className="text-gray-500">
+            Aucune image chargée
+          </div>
+        )}
       </div>
 
-      {/* SLIDERS PANEL */}
+      {/* SLIDERS */}
       <div className="bg-[#111] px-5 pt-4 pb-6 min-h-[180px]">
 
         {activeCategory === "light" && (
           <div className="space-y-6">
-            <Slider
-              label="Exposition"
-              value={values.exposure}
-              onChange={(v) => updateValue("exposure", v)}
-            />
-            <Slider
-              label="Contraste"
-              value={values.contrast}
-              onChange={(v) => updateValue("contrast", v)}
-            />
-            <Slider
-              label="Hautes lumières"
-              value={values.highlights}
-              onChange={(v) => updateValue("highlights", v)}
-            />
+            <Slider label="Exposition" value={values.exposure} onChange={(v) => updateValue("exposure", v)} />
+            <Slider label="Contraste" value={values.contrast} onChange={(v) => updateValue("contrast", v)} />
+            <Slider label="Hautes lumières" value={values.highlights} onChange={(v) => updateValue("highlights", v)} />
           </div>
         )}
 
         {activeCategory === "color" && (
           <div className="space-y-6">
-            <Slider
-              label="Saturation"
-              value={values.saturation}
-              onChange={(v) => updateValue("saturation", v)}
-            />
+            <Slider label="Saturation" value={values.saturation} onChange={(v) => updateValue("saturation", v)} />
           </div>
         )}
 
@@ -82,38 +80,13 @@ export default function EditorPage() {
         )}
       </div>
 
-      {/* CATEGORY MENU (LIKE LIGHTROOM) */}
+      {/* MENU */}
       <div className="bg-[#0c0c0c] border-t border-zinc-800 flex justify-around py-3 text-xs">
-        <CategoryItem
-          icon={<Sparkles size={20} />}
-          label="Auto"
-          active={activeCategory === "auto"}
-          onClick={() => setActiveCategory("auto")}
-        />
-        <CategoryItem
-          icon={<Sun size={20} />}
-          label="Lumière"
-          active={activeCategory === "light"}
-          onClick={() => setActiveCategory("light")}
-        />
-        <CategoryItem
-          icon={<Palette size={20} />}
-          label="Couleur"
-          active={activeCategory === "color"}
-          onClick={() => setActiveCategory("color")}
-        />
-        <CategoryItem
-          icon={<Sliders size={20} />}
-          label="Effets"
-          active={activeCategory === "effects"}
-          onClick={() => setActiveCategory("effects")}
-        />
-        <CategoryItem
-          icon={<Sliders size={20} />}
-          label="Détail"
-          active={activeCategory === "detail"}
-          onClick={() => setActiveCategory("detail")}
-        />
+        <CategoryItem icon={<Sparkles size={20} />} label="Auto" active={false} onClick={() => {}} />
+        <CategoryItem icon={<Sun size={20} />} label="Lumière" active={activeCategory === "light"} onClick={() => setActiveCategory("light")} />
+        <CategoryItem icon={<Palette size={20} />} label="Couleur" active={activeCategory === "color"} onClick={() => setActiveCategory("color")} />
+        <CategoryItem icon={<Sliders size={20} />} label="Effets" active={activeCategory === "effects"} onClick={() => setActiveCategory("effects")} />
+        <CategoryItem icon={<Sliders size={20} />} label="Détail" active={activeCategory === "detail"} onClick={() => setActiveCategory("detail")} />
       </div>
     </div>
   )
@@ -166,6 +139,6 @@ function CategoryItem({
     >
       {icon}
       <span>{label}</span>
-     </button>
+    </button>
   )
 }
