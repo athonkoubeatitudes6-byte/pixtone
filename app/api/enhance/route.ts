@@ -1,5 +1,7 @@
 import Replicate from "replicate"
 import { NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
@@ -10,16 +12,23 @@ export async function POST(req: Request) {
     const { image } = await req.json()
 
     if (!image) {
-      return NextResponse.json({ error: "No image provided" }, { status: 400 })
+      return NextResponse.json({ error: "No image" }, { status: 400 })
     }
 
+    // Extraire base64
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "")
+    const buffer = Buffer.from(base64Data, "base64")
+
+    // Sauvegarder temporairement
+    const filePath = path.join("/tmp", `upload-${Date.now()}.png`)
+    fs.writeFileSync(filePath, buffer)
+
     const output = await replicate.run(
-      "stability-ai/sdxl",
+      "nightmareai/real-esrgan",
       {
         input: {
-          prompt: "Enhance this image, improve quality, lighting, sharpness",
-          image: image
-        }
+          image: fs.createReadStream(filePath),
+        },
       }
     )
 
