@@ -19,6 +19,7 @@ export default function EditorPage() {
   const [image, setImage] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [filter, setFilter] = useState("none")
+  const [analyzing, setAnalyzing] = useState(false)
 
   useEffect(() => {
     const storedImage = localStorage.getItem("pixtone-image")
@@ -30,15 +31,19 @@ export default function EditorPage() {
   }, [router])
 
   const toggleTab = (tab: string) => {
+    if (tab === "filters" && activeTab !== "filters") {
+      setAnalyzing(true)
+      setTimeout(() => setAnalyzing(false), 1000)
+    }
     setActiveTab(prev => (prev === tab ? null : tab))
   }
 
   const filters: Record<string, string> = {
     none: "none",
     subtle: "brightness(1.05) contrast(1.05) saturate(1.1)",
-    strong: "brightness(1.1) contrast(1.2) saturate(1.3)",
-    bw: "grayscale(1) contrast(1.1)",
-    cold: "brightness(1.05) contrast(1.05) saturate(1.1) hue-rotate(180deg)",
+    strong: "brightness(1.15) contrast(1.25) saturate(1.4)",
+    bw: "grayscale(1) contrast(1.2)",
+    cold: "brightness(1.05) contrast(1.1) saturate(1.1) hue-rotate(180deg)",
   }
 
   const handleDownload = async () => {
@@ -89,9 +94,11 @@ export default function EditorPage() {
       {/* PANEL */}
       <div
         className={`transition-all duration-300 overflow-hidden bg-zinc-900 border-t border-zinc-800 ${
-          activeTab ? "max-h-52 p-5" : "max-h-0 p-0"
+          activeTab ? "max-h-72 p-5" : "max-h-0 p-0"
         }`}
       >
+
+        {/* ACTIONS */}
         {activeTab === "actions" && (
           <PanelContainer>
             <PanelButton>Auto</PanelButton>
@@ -101,14 +108,43 @@ export default function EditorPage() {
           </PanelContainer>
         )}
 
-        {activeTab === "filters" && (
-          <PanelContainer>
-            <PanelButton onClick={() => setFilter("none")}>Normal</PanelButton>
-            <PanelButton onClick={() => setFilter("subtle")}>Subtil</PanelButton>
-            <PanelButton onClick={() => setFilter("strong")}>Forte</PanelButton>
-            <PanelButton onClick={() => setFilter("bw")}>N&B</PanelButton>
-            <PanelButton onClick={() => setFilter("cold")}>Froid</PanelButton>
-          </PanelContainer>
+        {/* FILTRES STYLE SNAPSEED */}
+        {activeTab === "filters" && image && (
+          <div>
+
+            {analyzing ? (
+              <div className="text-center text-gray-400 animate-pulse">
+                Analyse de votre photo...
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto">
+
+                {Object.entries(filters).map(([key, value]) => (
+                  <div
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition ${
+                      filter === key
+                        ? "border-blue-500 scale-105"
+                        : "border-transparent hover:scale-105"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={key}
+                      className="w-24 h-24 object-cover"
+                      style={{ filter: value }}
+                    />
+                    <div className="text-xs text-center py-1 bg-zinc-800">
+                      {key.toUpperCase()}
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+          </div>
         )}
 
         {activeTab === "crop" && (
@@ -128,9 +164,10 @@ export default function EditorPage() {
             Masquage intelligent bientôt disponible...
           </div>
         )}
+
       </div>
 
-      {/* NAVIGATION BAS PRO */}
+      {/* NAVIGATION BAS */}
       <div className="bg-zinc-950 border-t border-zinc-800 py-4">
         <div className="flex justify-center gap-8">
 
@@ -182,6 +219,6 @@ function PanelButton({ children, onClick }: any) {
       className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm transition whitespace-nowrap"
     >
       {children}
-    </button>
+     </button>
   )
 }
