@@ -14,10 +14,8 @@ export async function POST(req: Request) {
         { error: "No image provided" },
         { status: 400 }
       )
-    }
-
-    const prediction = await replicate.predictions.create({
-      model: "fofr/real-esrgan",
+      }const prediction = await replicate.predictions.create({
+      model: "fofr/real-esrgan:42fed1c497c0d5b88f1e9d6a6e9f0dba4a8988e85b2e1fa53232fddc3e8c3c8f",
       input: {
         image,
         scale: 2
