@@ -9,22 +9,23 @@ export async function POST(req: Request) {
   try {
     const { image } = await req.json()
 
-    console.log("IMAGE RECEIVED:", image?.substring(0, 50))
+    if (!image) {
+      return NextResponse.json({ error: "No image provided" }, { status: 400 })
+    }
 
-    const output = await replicate.run(
-      "stability-ai/stable-diffusion-img2img",
-      {
-        input: {
-          image: image,
-          prompt: "Enhance photo quality, improve lighting, increase sharpness",
-          strength: 0.3
-        }
+    const prediction = await replicate.predictions.create({
+      model: "stability-ai/stable-diffusion-img2img",
+      input: {
+        image: image,
+        prompt: "Enhance photo quality, improve lighting, increase sharpness, natural colors",
+        strength: 0.3
       }
-    )
+    })
 
-    console.log("REPLICATE OUTPUT:", output)
+    // attendre que le modèle termine
+    const result = await replicate.wait(prediction)
 
-    return NextResponse.json({ output })
+    return NextResponse.json({ output: result.output })
 
   } catch (error: any) {
     console.error("FULL ERROR:", error)
