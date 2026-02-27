@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import {
+  Wand2,
+  Sliders,
+  Crop,
+  Sparkles,
+  Layers
+} from "lucide-react"
 
 export default function EditorPage() {
   const router = useRouter()
@@ -10,10 +17,8 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [filter, setFilter] = useState("none")
 
-  // 🔐 Sécurité : vérifier si image existe
   useEffect(() => {
     const storedImage = localStorage.getItem("pixtone-image")
-
     if (!storedImage) {
       router.push("/")
     } else {
@@ -21,7 +26,11 @@ export default function EditorPage() {
     }
   }, [router])
 
-  // 🎨 Filtres réels
+  // Toggle propre (ouvre / ferme)
+  const toggleTab = (tab: string) => {
+    setActiveTab(prev => (prev === tab ? null : tab))
+  }
+
   const filters: Record<string, string> = {
     none: "none",
     subtle: "brightness(1.05) contrast(1.05) saturate(1.1)",
@@ -33,7 +42,7 @@ export default function EditorPage() {
   return (
     <div className="h-screen flex flex-col bg-black text-white">
 
-      {/* IMAGE AREA */}
+      {/* IMAGE */}
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         {image && (
           <img
@@ -45,56 +54,117 @@ export default function EditorPage() {
         )}
       </div>
 
-      {/* PANEL */}
-      {activeTab && (
-        <div className="bg-zinc-900 p-4 border-t border-zinc-800">
+      {/* PANEL ANIMÉ */}
+      <div
+        className={`transition-all duration-300 overflow-hidden bg-zinc-900 border-t border-zinc-800 ${
+          activeTab ? "max-h-40 p-4" : "max-h-0 p-0"
+        }`}
+      >
+        {activeTab === "actions" && (
+          <div className="flex gap-4 overflow-x-auto">
+            <button className="btn">Auto</button>
+            <button className="btn">Améliorer</button>
+            <button className="btn">Sujet</button>
+            <button className="btn">Ciel</button>
+          </div>
+        )}
 
-          {/* ACTIONS */}
-          {activeTab === "actions" && (
-            <div className="flex gap-4 overflow-x-auto">
-              <button className="px-4 py-2 bg-zinc-800 rounded">Auto</button>
-              <button className="px-4 py-2 bg-zinc-800 rounded">Améliorer</button>
-              <button className="px-4 py-2 bg-zinc-800 rounded">Sujet</button>
-              <button className="px-4 py-2 bg-zinc-800 rounded">Ciel</button>
-            </div>
-          )}
+        {activeTab === "filters" && (
+          <div className="flex gap-4 overflow-x-auto">
+            <button onClick={() => setFilter("none")} className="btn">Normal</button>
+            <button onClick={() => setFilter("subtle")} className="btn">Subtil</button>
+            <button onClick={() => setFilter("strong")} className="btn">Forte</button>
+            <button onClick={() => setFilter("bw")} className="btn">N&B</button>
+            <button onClick={() => setFilter("cold")} className="btn">Froid</button>
+          </div>
+        )}
 
-          {/* FILTRES */}
-          {activeTab === "filters" && (
-            <div className="flex gap-4 overflow-x-auto">
-              <button onClick={() => setFilter("none")} className="px-4 py-2 bg-zinc-800 rounded">Normal</button>
-              <button onClick={() => setFilter("subtle")} className="px-4 py-2 bg-zinc-800 rounded">Subtil</button>
-              <button onClick={() => setFilter("strong")} className="px-4 py-2 bg-zinc-800 rounded">Forte</button>
-              <button onClick={() => setFilter("bw")} className="px-4 py-2 bg-zinc-800 rounded">N&B</button>
-              <button onClick={() => setFilter("cold")} className="px-4 py-2 bg-zinc-800 rounded">Froid</button>
-            </div>
-          )}
+        {activeTab === "crop" && (
+          <div className="text-gray-400">Recadrage bientôt disponible...</div>
+        )}
 
-          {/* AUTRES ONGLET (placeholder pour futur) */}
-          {activeTab === "crop" && (
-            <div className="text-gray-400">Outil de recadrage à venir...</div>
-          )}
+        {activeTab === "adjust" && (
+          <div className="text-gray-400">Réglages avancés bientôt disponibles...</div>
+        )}
 
-          {activeTab === "adjust" && (
-            <div className="text-gray-400">Réglages lumière / couleur à venir...</div>
-          )}
+        {activeTab === "mask" && (
+          <div className="text-gray-400">Masquage intelligent bientôt disponible...</div>
+        )}
+      </div>
 
-          {activeTab === "mask" && (
-            <div className="text-gray-400">Masquage intelligent à venir...</div>
-          )}
+      {/* BOTTOM NAV PRO */}
+      <div className="bg-zinc-950 border-t border-zinc-800 px-4 py-3">
+        <div className="flex justify-between items-center max-w-md mx-auto">
+
+          <NavButton
+            icon={<Wand2 size={20} />}
+            label="Actions"
+            active={activeTab === "actions"}
+            onClick={() => toggleTab("actions")}
+          />
+
+          <NavButton
+            icon={<Sparkles size={20} />}
+            label="Filtres"
+            active={activeTab === "filters"}
+            onClick={() => toggleTab("filters")}
+          />
+
+          <NavButton
+            icon={<Crop size={20} />}
+            label="Recadrage"
+            active={activeTab === "crop"}
+            onClick={() => toggleTab("crop")}
+          />
+
+          <NavButton
+            icon={<Sliders size={20} />}
+            label="Modifier"
+            active={activeTab === "adjust"}
+            onClick={() => toggleTab("adjust")}
+          />
+
+          <NavButton
+            icon={<Layers size={20} />}
+            label="Masque"
+            active={activeTab === "mask"}
+            onClick={() => toggleTab("mask")}
+          />
 
         </div>
-      )}
-
-      {/* BOTTOM NAV */}
-      <div className="bg-zinc-950 flex justify-around py-3 border-t border-zinc-800">
-        <button onClick={() => setActiveTab("actions")}>Actions</button>
-        <button onClick={() => setActiveTab("filters")}>Filtres</button>
-        <button onClick={() => setActiveTab("crop")}>Recadrage</button>
-        <button onClick={() => setActiveTab("adjust")}>Modifier</button>
-        <button onClick={() => setActiveTab("mask")}>Masquage</button>
       </div>
 
     </div>
+  )
+}
+
+// Bouton stylé
+function NavButton({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center text-xs transition ${
+        active ? "text-white" : "text-gray-500"
+      }`}
+    >
+      <div
+        className={`p-2 rounded-xl transition ${
+          active ? "bg-zinc-800" : ""
+        }`}
+      >
+        {icon}
+      </div>
+      <span className="mt-1">{label}</span>
+    </button>
   )
 }
