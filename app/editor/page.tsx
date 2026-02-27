@@ -8,7 +8,8 @@ import {
   Crop,
   Sparkles,
   Layers,
-  Download
+  Download,
+  Check
 } from "lucide-react"
 import html2canvas from "html2canvas"
 
@@ -24,7 +25,6 @@ export default function EditorPage() {
   const [filter, setFilter] = useState("none")
   const [analyzing, setAnalyzing] = useState(false)
 
-  // 🔥 Crop states
   const [croppedArea, setCroppedArea] = useState<any>(null)
   const [cropping, setCropping] = useState(false)
 
@@ -38,10 +38,6 @@ export default function EditorPage() {
   }, [router])
 
   const toggleTab = (tab: string) => {
-    if (tab === "filters" && activeTab !== "filters") {
-      setAnalyzing(true)
-      setTimeout(() => setAnalyzing(false), 800)
-    }
     setActiveTab(prev => (prev === tab ? null : tab))
   }
 
@@ -69,7 +65,6 @@ export default function EditorPage() {
     localStorage.setItem("pixtone-gallery", JSON.stringify(existing))
   }
 
-  // 🔥 IA Enhance
   const handleAutoEnhance = async () => {
     if (!image) return
 
@@ -95,10 +90,8 @@ export default function EditorPage() {
     }
   }
 
-  // 🔥 Save crop
   const handleCropSave = async () => {
     if (!image || !croppedArea) return
-
     const result = await getCroppedImg(image, croppedArea)
     setImage(result)
     setCropping(false)
@@ -119,18 +112,48 @@ export default function EditorPage() {
         </button>
       </div>
 
-      {/* IMAGE */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
-        {image && (
-          <div ref={imageRef} className="rounded-2xl overflow-hidden shadow-2xl">
+      {/* IMAGE ZONE */}
+      <div className="flex-1 flex items-center justify-center overflow-hidden px-4 relative">
+
+        {image && !cropping && (
+          <div
+            ref={imageRef}
+            className="relative rounded-2xl overflow-hidden shadow-2xl"
+          >
             <img
               src={image}
               alt="preview"
               className="max-h-[75vh] max-w-full object-contain transition-all duration-300"
               style={{ filter: filters[filter] }}
             />
+
+            {activeTab === "crop" && (
+              <button
+                onClick={() => setCropping(true)}
+                className="absolute bottom-4 right-4 bg-black/70 p-3 rounded-full hover:bg-black"
+              >
+                <Crop size={18} />
+              </button>
+            )}
           </div>
         )}
+
+        {image && cropping && (
+          <div className="relative w-full max-w-3xl h-[75vh]">
+            <ImageCropper
+              image={image}
+              onCropComplete={setCroppedArea}
+            />
+
+            <button
+              onClick={handleCropSave}
+              className="absolute bottom-4 right-4 bg-green-600 p-3 rounded-full hover:bg-green-700 shadow-lg"
+            >
+              <Check size={18} />
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* PANEL */}
@@ -141,11 +164,14 @@ export default function EditorPage() {
       >
 
         {activeTab === "actions" && (
-          <PanelContainer>
-            <PanelButton onClick={handleAutoEnhance}>
+          <div className="flex justify-center">
+            <button
+              onClick={handleAutoEnhance}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl"
+            >
               {analyzing ? "Analyse IA..." : "Auto IA"}
-            </PanelButton>
-          </PanelContainer>
+            </button>
+          </div>
         )}
 
         {activeTab === "filters" && image && (
@@ -171,46 +197,6 @@ export default function EditorPage() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {activeTab === "crop" && image && (
-          <div className="space-y-4">
-            {!cropping ? (
-              <div className="text-center">
-                <button
-                  onClick={() => setCropping(true)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl"
-                >
-                  Commencer le recadrage
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="h-80">
-                  <ImageCropper
-                    image={image}
-                    onCropComplete={setCroppedArea}
-                  />
-                </div>
-
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={() => setCropping(false)}
-                    className="px-4 py-2 bg-zinc-700 rounded-xl"
-                  >
-                    Annuler
-                  </button>
-
-                  <button
-                    onClick={handleCropSave}
-                    className="px-4 py-2 bg-blue-600 rounded-xl"
-                  >
-                    Appliquer
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         )}
 
@@ -247,25 +233,6 @@ function NavButton({ icon, label, active, onClick }: any) {
         {icon}
       </div>
       <span className="mt-1">{label}</span>
-    </button>
-  )
-}
-
-function PanelContainer({ children }: any) {
-  return (
-    <div className="flex gap-4 overflow-x-auto justify-center">
-      {children}
-    </div>
-  )
-}
-
-function PanelButton({ children, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm transition whitespace-nowrap"
-    >
-      {children}
     </button>
   )
 }

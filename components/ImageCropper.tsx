@@ -30,16 +30,37 @@ export default function ImageCropper({
   )
 
   return (
-    <div className="relative w-full h-96 bg-black">
+    <div className="relative w-full h-full bg-black">
+
       <Cropper
         image={image}
         crop={crop}
         zoom={zoom}
-        aspect={1}
+
+        /* 🔥 IMPORTANT : recadrage libre */
+        aspect={undefined}
+
+        cropShape="rect"
+        showGrid={true}
+
         onCropChange={setCrop}
         onZoomChange={setZoom}
         onCropComplete={handleCropComplete}
       />
+
+      {/* 🔎 Slider Zoom */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2/3">
+        <input
+          type="range"
+          min={1}
+          max={3}
+          step={0.1}
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+          className="w-full"
+        />
+      </div>
+
     </div>
   )
 }
