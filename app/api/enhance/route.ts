@@ -14,15 +14,13 @@ export async function POST(req: Request) {
     }
 
     const prediction = await replicate.predictions.create({
-      model: "stability-ai/stable-diffusion-img2img",
+      model: "cjwbw/real-esrgan",
       input: {
         image: image,
-        prompt: "Enhance photo quality, improve lighting, increase sharpness, natural colors",
-        strength: 0.3
+        scale: 2
       }
     })
 
-    // attendre que le modèle termine
     const result = await replicate.wait(prediction)
 
     return NextResponse.json({ output: result.output })
