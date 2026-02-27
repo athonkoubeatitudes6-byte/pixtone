@@ -10,7 +10,10 @@ export async function POST(req: Request) {
     const { image } = await req.json()
 
     if (!image) {
-      return NextResponse.json({ error: "No image provided" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No image provided" },
+        { status: 400 }
+      )
     }
 
     const prediction = await replicate.predictions.create({
