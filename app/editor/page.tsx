@@ -41,7 +41,6 @@ export default function EditorPage() {
     cold: "brightness(1.05) contrast(1.05) saturate(1.1) hue-rotate(180deg)",
   }
 
-  // ✅ EXPORT IMAGE
   const handleDownload = async () => {
     if (!imageRef.current) return
 
@@ -53,7 +52,6 @@ export default function EditorPage() {
     link.download = "pixtone-edit.png"
     link.click()
 
-    // sauvegarde galerie
     const existing = JSON.parse(localStorage.getItem("pixtone-gallery") || "[]")
     existing.push(dataUrl)
     localStorage.setItem("pixtone-gallery", JSON.stringify(existing))
@@ -62,108 +60,85 @@ export default function EditorPage() {
   return (
     <div className="h-screen flex flex-col bg-black text-white">
 
-      {/* HEADER AVEC FLECHE TELECHARGER */}
-      <div className="flex justify-between items-center p-4 border-b border-zinc-800">
-        <div className="font-semibold">Éditeur</div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800">
+        <div className="text-lg font-semibold tracking-wide">Pixtone</div>
 
         <button
           onClick={handleDownload}
-          className="p-2 rounded-lg hover:bg-zinc-800 transition"
+          className="p-3 rounded-full bg-zinc-800 hover:bg-zinc-700 transition"
         >
-          <Download size={22} />
+          <Download size={20} />
         </button>
       </div>
 
       {/* IMAGE */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
         {image && (
-          <div ref={imageRef}>
+          <div ref={imageRef} className="rounded-2xl overflow-hidden shadow-2xl">
             <img
               src={image}
               alt="preview"
-              className="max-h-full max-w-full object-contain transition-all duration-300"
+              className="max-h-[75vh] max-w-full object-contain transition-all duration-300"
               style={{ filter: filters[filter] }}
             />
           </div>
         )}
       </div>
 
-      {/* PANEL ANIMÉ */}
+      {/* PANEL */}
       <div
         className={`transition-all duration-300 overflow-hidden bg-zinc-900 border-t border-zinc-800 ${
-          activeTab ? "max-h-40 p-4" : "max-h-0 p-0"
+          activeTab ? "max-h-52 p-5" : "max-h-0 p-0"
         }`}
       >
         {activeTab === "actions" && (
-          <div className="flex gap-4 overflow-x-auto">
-            <button className="btn">Auto</button>
-            <button className="btn">Améliorer</button>
-            <button className="btn">Sujet</button>
-            <button className="btn">Ciel</button>
-          </div>
+          <PanelContainer>
+            <PanelButton>Auto</PanelButton>
+            <PanelButton>Améliorer</PanelButton>
+            <PanelButton>Sujet</PanelButton>
+            <PanelButton>Ciel</PanelButton>
+          </PanelContainer>
         )}
 
         {activeTab === "filters" && (
-          <div className="flex gap-4 overflow-x-auto">
-            <button onClick={() => setFilter("none")} className="btn">Normal</button>
-            <button onClick={() => setFilter("subtle")} className="btn">Subtil</button>
-            <button onClick={() => setFilter("strong")} className="btn">Forte</button>
-            <button onClick={() => setFilter("bw")} className="btn">N&B</button>
-            <button onClick={() => setFilter("cold")} className="btn">Froid</button>
-          </div>
+          <PanelContainer>
+            <PanelButton onClick={() => setFilter("none")}>Normal</PanelButton>
+            <PanelButton onClick={() => setFilter("subtle")}>Subtil</PanelButton>
+            <PanelButton onClick={() => setFilter("strong")}>Forte</PanelButton>
+            <PanelButton onClick={() => setFilter("bw")}>N&B</PanelButton>
+            <PanelButton onClick={() => setFilter("cold")}>Froid</PanelButton>
+          </PanelContainer>
         )}
 
         {activeTab === "crop" && (
-          <div className="text-gray-400">Recadrage bientôt disponible...</div>
+          <div className="text-center text-gray-400">
+            Recadrage bientôt disponible...
+          </div>
         )}
 
         {activeTab === "adjust" && (
-          <div className="text-gray-400">Réglages avancés bientôt disponibles...</div>
+          <div className="text-center text-gray-400">
+            Réglages avancés bientôt disponibles...
+          </div>
         )}
 
         {activeTab === "mask" && (
-          <div className="text-gray-400">Masquage intelligent bientôt disponible...</div>
+          <div className="text-center text-gray-400">
+            Masquage intelligent bientôt disponible...
+          </div>
         )}
       </div>
 
-      {/* BOTTOM NAV */}
-      <div className="bg-zinc-950 border-t border-zinc-800 px-4 py-3">
-        <div className="flex justify-between items-center max-w-md mx-auto">
+      {/* NAVIGATION BAS PRO */}
+      <div className="bg-zinc-950 border-t border-zinc-800 py-4">
+        <div className="flex justify-center gap-8">
 
-          <NavButton
-            icon={<Wand2 size={20} />}
-            label="Actions"
-            active={activeTab === "actions"}
-            onClick={() => toggleTab("actions")}
-          />
-
-          <NavButton
-            icon={<Sparkles size={20} />}
-            label="Filtres"
-            active={activeTab === "filters"}
-            onClick={() => toggleTab("filters")}
-          />
-
-          <NavButton
-            icon={<Crop size={20} />}
-            label="Recadrage"
-            active={activeTab === "crop"}
-            onClick={() => toggleTab("crop")}
-          />
-
-          <NavButton
-            icon={<Sliders size={20} />}
-            label="Modifier"
-            active={activeTab === "adjust"}
-            onClick={() => toggleTab("adjust")}
-          />
-
-          <NavButton
-            icon={<Layers size={20} />}
-            label="Masque"
-            active={activeTab === "mask"}
-            onClick={() => toggleTab("mask")}
-          />
+          <NavButton icon={<Wand2 size={20} />} label="Actions" active={activeTab === "actions"} onClick={() => toggleTab("actions")} />
+          <NavButton icon={<Sparkles size={20} />} label="Filtres" active={activeTab === "filters"} onClick={() => toggleTab("filters")} />
+          <NavButton icon={<Crop size={20} />} label="Recadrage" active={activeTab === "crop"} onClick={() => toggleTab("crop")} />
+          <NavButton icon={<Sliders size={20} />} label="Modifier" active={activeTab === "adjust"} onClick={() => toggleTab("adjust")} />
+          <NavButton icon={<Layers size={20} />} label="Masque" active={activeTab === "mask"} onClick={() => toggleTab("mask")} />
 
         </div>
       </div>
@@ -172,32 +147,41 @@ export default function EditorPage() {
   )
 }
 
-function NavButton({
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
+function NavButton({ icon, label, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center text-xs transition ${
-        active ? "text-white" : "text-gray-500"
+      className={`flex flex-col items-center text-xs transition-all ${
+        active ? "text-white scale-105" : "text-gray-500"
       }`}
     >
       <div
-        className={`p-2 rounded-xl transition ${
-          active ? "bg-zinc-800" : ""
+        className={`p-3 rounded-2xl transition-all ${
+          active ? "bg-zinc-800 shadow-lg" : "hover:bg-zinc-800"
         }`}
       >
         {icon}
       </div>
       <span className="mt-1">{label}</span>
+    </button>
+  )
+}
+
+function PanelContainer({ children }: any) {
+  return (
+    <div className="flex gap-4 overflow-x-auto justify-center">
+      {children}
+    </div>
+  )
+}
+
+function PanelButton({ children, onClick }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm transition whitespace-nowrap"
+    >
+      {children}
     </button>
   )
 }
