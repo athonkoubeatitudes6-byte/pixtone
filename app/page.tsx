@@ -15,17 +15,28 @@ export default function HomePage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Vérification sécurité (image seulement)
+    if (!file.type.startsWith("image/")) {
+      alert("Veuillez sélectionner une image valide.")
+      return
+    }
+
     const reader = new FileReader()
 
     reader.onload = function () {
       try {
         const result = reader.result as string
+
+        // On supprime ancienne image si existe
+        localStorage.removeItem("pixtone-image")
+
+        // On sauvegarde la nouvelle image
         localStorage.setItem("pixtone-image", result)
 
-        // petite sécurité
+        // Petite sécurité avant redirection
         setTimeout(() => {
           router.push("/editor")
-        }, 100)
+        }, 150)
 
       } catch (error) {
         console.error("Erreur upload:", error)
@@ -57,7 +68,7 @@ export default function HomePage() {
 
         <button
           onClick={handleImportClick}
-          className="mt-10 bg-white text-black px-8 py-4 rounded-full text-lg font-semibold hover:scale-105 transition"
+          className="mt-10 bg-white text-black px-8 py-4 rounded-full text-lg font-semibold hover:scale-105 active:scale-95 transition"
         >
           Importer une photo
         </button>
