@@ -33,7 +33,7 @@ export default function EditorPage() {
   const toggleTab = (tab: string) => {
     if (tab === "filters" && activeTab !== "filters") {
       setAnalyzing(true)
-      setTimeout(() => setAnalyzing(false), 1000)
+      setTimeout(() => setAnalyzing(false), 800)
     }
     setActiveTab(prev => (prev === tab ? null : tab))
   }
@@ -60,6 +60,34 @@ export default function EditorPage() {
     const existing = JSON.parse(localStorage.getItem("pixtone-gallery") || "[]")
     existing.push(dataUrl)
     localStorage.setItem("pixtone-gallery", JSON.stringify(existing))
+  }
+
+  // 🔥 IA AUTO ENHANCE
+  const handleAutoEnhance = async () => {
+    if (!image) return
+
+    try {
+      setAnalyzing(true)
+
+      const res = await fetch("/api/enhance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image }),
+      })
+
+      const data = await res.json()
+
+      if (data.output) {
+        setImage(data.output)
+      }
+
+    } catch (err) {
+      console.error("Erreur IA:", err)
+    } finally {
+      setAnalyzing(false)
+    }
   }
 
   return (
@@ -101,49 +129,39 @@ export default function EditorPage() {
         {/* ACTIONS */}
         {activeTab === "actions" && (
           <PanelContainer>
-            <PanelButton>Auto</PanelButton>
+            <PanelButton onClick={handleAutoEnhance}>
+              {analyzing ? "Analyse IA..." : "Auto IA"}
+            </PanelButton>
             <PanelButton>Améliorer</PanelButton>
             <PanelButton>Sujet</PanelButton>
             <PanelButton>Ciel</PanelButton>
           </PanelContainer>
         )}
 
-        {/* FILTRES STYLE SNAPSEED */}
+        {/* FILTRES */}
         {activeTab === "filters" && image && (
-          <div>
-
-            {analyzing ? (
-              <div className="text-center text-gray-400 animate-pulse">
-                Analyse de votre photo...
+          <div className="flex gap-4 overflow-x-auto">
+            {Object.entries(filters).map(([key, value]) => (
+              <div
+                key={key}
+                onClick={() => setFilter(key)}
+                className={`cursor-pointer rounded-xl overflow-hidden border-2 transition ${
+                  filter === key
+                    ? "border-blue-500 scale-105"
+                    : "border-transparent hover:scale-105"
+                }`}
+              >
+                <img
+                  src={image}
+                  alt={key}
+                  className="w-24 h-24 object-cover"
+                  style={{ filter: value }}
+                />
+                <div className="text-xs text-center py-1 bg-zinc-800">
+                  {key.toUpperCase()}
+                </div>
               </div>
-            ) : (
-              <div className="flex gap-4 overflow-x-auto">
-
-                {Object.entries(filters).map(([key, value]) => (
-                  <div
-                    key={key}
-                    onClick={() => setFilter(key)}
-                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition ${
-                      filter === key
-                        ? "border-blue-500 scale-105"
-                        : "border-transparent hover:scale-105"
-                    }`}
-                  >
-                    <img
-                      src={image}
-                      alt={key}
-                      className="w-24 h-24 object-cover"
-                      style={{ filter: value }}
-                    />
-                    <div className="text-xs text-center py-1 bg-zinc-800">
-                      {key.toUpperCase()}
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-            )}
-
+            ))}
           </div>
         )}
 
@@ -219,6 +237,6 @@ function PanelButton({ children, onClick }: any) {
       className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm transition whitespace-nowrap"
     >
       {children}
-     </button>
+    </button>
   )
 }
