@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     }
 
     const prediction = await replicate.predictions.create({
-      model: "cjwbw/real-esrgan",
+      version: "42fed1c497db8a3b2f9b1d0c7f1b5b3e3d18f0b9d6e2a444ef98a32956543d4b",
       input: {
         image: image,
         scale: 2
