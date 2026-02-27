@@ -1,15 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { Sliders, Sparkles, Crop, Settings, Eraser, Wand2 } from "lucide-react"
+import { Sun, Palette, Sparkles, Sliders } from "lucide-react"
 
 export default function EditorPage() {
-  const [activeTab, setActiveTab] = useState("modif")
+  const [activeCategory, setActiveCategory] = useState("light")
 
   const [values, setValues] = useState({
     exposure: 0,
     contrast: 0,
     highlights: 0,
+    saturation: 0,
   })
 
   const updateValue = (key: string, value: number) => {
@@ -19,54 +20,100 @@ export default function EditorPage() {
   const filterStyle = `
     brightness(${1 + values.exposure / 100})
     contrast(${1 + values.contrast / 100})
+    saturate(${1 + values.saturation / 100})
   `
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
+    <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
 
       {/* IMAGE FULL SCREEN */}
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         <img
           src="/test.jpg"
           alt="preview"
-          className="max-h-full object-contain"
+          className="max-h-full object-contain transition-all duration-200"
           style={{ filter: filterStyle }}
         />
       </div>
 
-      {/* SLIDERS PANEL (LIKE LIGHTROOM) */}
-      {activeTab === "modif" && (
-        <div className="bg-[#111] px-4 py-4 space-y-5">
+      {/* SLIDERS PANEL */}
+      <div className="bg-[#111] px-5 pt-4 pb-6 min-h-[180px]">
 
-          <Slider
-            label="Exposition"
-            value={values.exposure}
-            onChange={(v) => updateValue("exposure", v)}
-          />
+        {activeCategory === "light" && (
+          <div className="space-y-6">
+            <Slider
+              label="Exposition"
+              value={values.exposure}
+              onChange={(v) => updateValue("exposure", v)}
+            />
+            <Slider
+              label="Contraste"
+              value={values.contrast}
+              onChange={(v) => updateValue("contrast", v)}
+            />
+            <Slider
+              label="Hautes lumières"
+              value={values.highlights}
+              onChange={(v) => updateValue("highlights", v)}
+            />
+          </div>
+        )}
 
-          <Slider
-            label="Contraste"
-            value={values.contrast}
-            onChange={(v) => updateValue("contrast", v)}
-          />
+        {activeCategory === "color" && (
+          <div className="space-y-6">
+            <Slider
+              label="Saturation"
+              value={values.saturation}
+              onChange={(v) => updateValue("saturation", v)}
+            />
+          </div>
+        )}
 
-          <Slider
-            label="Hautes lumières"
-            value={values.highlights}
-            onChange={(v) => updateValue("highlights", v)}
-          />
+        {activeCategory === "effects" && (
+          <div className="text-center text-gray-500 mt-6">
+            Effets bientôt disponibles
+          </div>
+        )}
 
-        </div>
-      )}
+        {activeCategory === "detail" && (
+          <div className="text-center text-gray-500 mt-6">
+            Détail bientôt disponible
+          </div>
+        )}
+      </div>
 
-      {/* BOTTOM MENU EXACT LIGHTROOM STYLE */}
-      <div className="bg-[#0c0c0c] border-t border-zinc-800 flex justify-between px-3 py-2 text-xs">
-        <BottomItem icon={<Sparkles size={20} />} label="Actions" active={activeTab === "actions"} onClick={() => setActiveTab("actions")} />
-        <BottomItem icon={<Wand2 size={20} />} label="Param. prédéf." active={activeTab === "preset"} onClick={() => setActiveTab("preset")} />
-        <BottomItem icon={<Crop size={20} />} label="Recadrage" active={activeTab === "crop"} onClick={() => setActiveTab("crop")} />
-        <BottomItem icon={<Sliders size={20} />} label="Modif." active={activeTab === "modif"} onClick={() => setActiveTab("modif")} />
-        <BottomItem icon={<Settings size={20} />} label="Masquage" active={activeTab === "mask"} onClick={() => setActiveTab("mask")} />
-        <BottomItem icon={<Eraser size={20} />} label="Supprimer" active={activeTab === "delete"} onClick={() => setActiveTab("delete")} />
+      {/* CATEGORY MENU (LIKE LIGHTROOM) */}
+      <div className="bg-[#0c0c0c] border-t border-zinc-800 flex justify-around py-3 text-xs">
+        <CategoryItem
+          icon={<Sparkles size={20} />}
+          label="Auto"
+          active={activeCategory === "auto"}
+          onClick={() => setActiveCategory("auto")}
+        />
+        <CategoryItem
+          icon={<Sun size={20} />}
+          label="Lumière"
+          active={activeCategory === "light"}
+          onClick={() => setActiveCategory("light")}
+        />
+        <CategoryItem
+          icon={<Palette size={20} />}
+          label="Couleur"
+          active={activeCategory === "color"}
+          onClick={() => setActiveCategory("color")}
+        />
+        <CategoryItem
+          icon={<Sliders size={20} />}
+          label="Effets"
+          active={activeCategory === "effects"}
+          onClick={() => setActiveCategory("effects")}
+        />
+        <CategoryItem
+          icon={<Sliders size={20} />}
+          label="Détail"
+          active={activeCategory === "detail"}
+          onClick={() => setActiveCategory("detail")}
+        />
       </div>
     </div>
   )
@@ -83,7 +130,7 @@ function Slider({
 }) {
   return (
     <div>
-      <div className="flex justify-between mb-2 text-sm text-gray-300">
+      <div className="flex justify-between text-sm text-gray-300 mb-2">
         <span>{label}</span>
         <span>{value}</span>
       </div>
@@ -93,13 +140,13 @@ function Slider({
         max={100}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full"
+        className="w-full accent-white"
       />
     </div>
   )
 }
 
-function BottomItem({
+function CategoryItem({
   icon,
   label,
   active,
@@ -119,6 +166,6 @@ function BottomItem({
     >
       {icon}
       <span>{label}</span>
-    </button>
+     </button>
   )
 }
