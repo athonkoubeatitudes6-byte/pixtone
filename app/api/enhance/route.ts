@@ -6,14 +6,30 @@ const replicate = new Replicate({
 })
 
 export async function POST(req: Request) {
-  const { image } = await req.json()
+  try {
+    const { image } = await req.json()
 
-  const output = await replicate.run(
-    "nightmareai/real-esrgan",
-    {
-      input: { image }
+    if (!image) {
+      return NextResponse.json({ error: "No image provided" }, { status: 400 })
     }
-  )
 
-  return NextResponse.json({ output })
+    const output = await replicate.run(
+      "stability-ai/sdxl",
+      {
+        input: {
+          prompt: "Enhance this image, improve quality, lighting, sharpness",
+          image: image
+        }
+      }
+    )
+
+    return NextResponse.json({ output })
+
+  } catch (error) {
+    console.error("API ERROR:", error)
+    return NextResponse.json(
+      { error: "Enhancement failed" },
+      { status: 500 }
+    )
+  }
 }
